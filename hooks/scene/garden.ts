@@ -101,7 +101,7 @@ function umbel(wash: string, body: number): string {
 }
 
 function bud(green: string): string {
-  return `<path d="M0 0C-7 -6 -5 -15 0 -20C5 -15 7 -6 0 0Z" fill="${green}" fill-opacity=".5" stroke="${GRAPHITE}" stroke-width=".8"/>`
+  return `<path d="M0 0C-7 -6 -5 -15 0 -20C5 -15 7 -6 0 0Z" fill="${green}" stroke="${GRAPHITE}" stroke-width=".8"/>`
 }
 
 /** A spike of small florets up the last stretch of the stem, as lavender or a foxglove has. */
@@ -204,7 +204,7 @@ function stalk(plot: Plot, order: number, bloom: string): string {
 
   const tip = along(curve, 1)
   const scale = (1.5 + chance(seed, index, 9) * 1.2) * (1 - order * 0.12)
-  const head = `<g transform="translate(${round(tip.x)} ${round(tip.y)}) rotate(${round(tip.facing - 90)}) scale(${round(scale)})">${plot.grown >= 0.8 ? bloom : bud(green)}</g>`
+  const head = `<g transform="translate(${round(tip.x)} ${round(tip.y)}) rotate(${round(tip.facing - 90)}) scale(${round(scale)})">${plot.grown >= 0.8 ? bloom : bud(plot.leafBody === 1 ? green : tint(green, 0.3))}</g>`
   const shoot = order === 0 && plot.grown >= 0.95 ? sideShoot(plot, curve, bloom) : ''
   return drawn + foliage(plot, leaves) + shoot + head
 }
@@ -291,11 +291,11 @@ function grass(seed: number, width: number): string {
 /**
  * One bed. Plants come up in a fixed, scattered order: two at the start of a session, then another every turn or
  * two. Each takes about ten turns from seedling to full grown.
- * Foliage is drawn first and the flowers over it. `fewer` leaves out that many of the last plants to come up.
+ * About half the plants stand in a back row and half in a front row, so a fence can run between them. In each
+ * row foliage is drawn first and the flowers over it. `fewer` leaves out that many of the last plants to come up.
  */
-export function garden(seed: number, turns: number, bed: Bed, fewer = 0): string {
-  let greenery = ''
-  let flowers = ''
+export function garden(seed: number, turns: number, bed: Bed, fewer = 0): { back: string; front: string } {
+  const rows = { back: { greenery: '', flowers: '' }, front: { greenery: '', flowers: '' } }
   for (let index = 0; index < bed.plants; index += 1) {
     const rank = (index * 5) % bed.plants
     const sproutedAt = rank < 2 ? 0 : (rank - 1) * 1.3
@@ -313,10 +313,11 @@ export function garden(seed: number, turns: number, bed: Bed, fewer = 0): string
       green: hasSolidLeaves ? tint(green, 0.3) : green,
       leafBody: hasSolidLeaves ? 1 : 0.45,
     }
+    const row = chance(seed, index, 22) < 0.5 ? rows.back : rows.front
     const kind = chance(seed, index, 17)
-    if (kind < bed.flowerShare || index % 4 === 1) flowers += flower(plot)
-    else if (kind < bed.flowerShare + (1 - bed.flowerShare) / 2) greenery += fern(plot)
-    else greenery += clump(plot)
+    if (kind < bed.flowerShare || index % 4 === 1) row.flowers += flower(plot)
+    else if (kind < bed.flowerShare + (1 - bed.flowerShare) / 2) row.greenery += fern(plot)
+    else row.greenery += clump(plot)
   }
-  return grass(seed, bed.width) + greenery + flowers
+  return { back: rows.back.greenery + rows.back.flowers, front: grass(seed, bed.width) + rows.front.greenery + rows.front.flowers }
 }

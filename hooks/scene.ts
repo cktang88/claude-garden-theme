@@ -26,6 +26,8 @@ function style(): string {
 }
 
 function draw(stage: Stage, figures: Figures, previous: Previous, fewer: number): string {
+  const left = garden(stage.seed, stage.turns, LEFT_BED, fewer)
+  const right = garden(stage.seed + 7, stage.turns, RIGHT_BED, fewer)
   return (
     `<svg xmlns="http://www.w3.org/2000/svg" width="100%" height="100%" style="--at:-${round(stage.now % SHARED_CLOCK)}s;--turn:-${round(stage.turnSeconds)}s">` +
     `<style>${style()}</style>` +
@@ -34,14 +36,16 @@ function draw(stage: Stage, figures: Figures, previous: Previous, fewer: number)
     `</svg>` +
     `<svg viewBox="0 0 ${TREE_ROOM} ${TREE_ROOM}" width="100%" height="100%" preserveAspectRatio="xMaxYMax meet"><g transform="translate(${TREE_ROOM} 0) scale(-1 1)">${tree(stage.seed, stage.turns, 24)}</g></svg>` +
     `<svg viewBox="0 0 ${LEFT_BED.width} ${HEIGHT}" width="100%" height="100%" preserveAspectRatio="xMinYMax meet">` +
+    left.back +
     fence(250, 600) +
-    garden(stage.seed, stage.turns, LEFT_BED, fewer) +
-    snail(352) +
+    left.front +
     mushrooms(560) +
+    snail(436) +
     wateringCan(310) +
     `</svg>` +
     `<svg viewBox="0 0 ${RIGHT_BED.width} ${HEIGHT}" width="100%" height="100%" preserveAspectRatio="xMaxYMax meet"><g transform="translate(${RIGHT_BED.width} 0) scale(-1 1)">` +
-    garden(stage.seed + 7, stage.turns, RIGHT_BED, fewer) +
+    right.back +
+    right.front +
     birdhouse(338) +
     mushrooms(262) +
     (stage.turns >= 3 ? butterfly(90, 600) : '') +
