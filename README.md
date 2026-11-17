@@ -2,9 +2,9 @@
 
 A light paper theme for the Claude desktop app (the Code tab). Warm paper behind the chat, and four pencil-sketched dials in the top right that move and show real numbers from your session.
 
-![warm paper with four pencil-sketched dials in the top right](docs/preview.png)
+![warm paper with four pencil-sketched dials in the top right and a paper plane flying a loop in the bottom right](docs/preview.gif)
 
-The dials while Claude works. The cost rolls to its new number, the turn's time counts up, and the hourglass turns over each minute:
+The dials up close, while Claude works. The cost rolls to its new number, the turn's time counts up, and the hourglass turns over each minute:
 
 ![the four dials moving](docs/dials.gif)
 
