@@ -1,9 +1,9 @@
-// Four dials sketched on the paper in pencil, with calligraphy lettering, drawn from real session figures:
+// Four dials sketched on the paper in pencil, lettered in a child's printing hand, drawn from real session figures:
 // how full the context window is (a wash of ink that rises), the turn (an hourglass, its time, its tool calls), the session's cost
 // (or the rate limits, where the account has them), and a clock.
 //
-// All motion is plain CSS animation. The hooks redraw the picture when a turn starts, when it ends, and after tool
-// calls. A redraw starts every animation again, so each one is told how far along it already is (`--at`, `--turn`).
+// All motion is plain CSS animation. The hooks redraw the picture when a turn starts and when it ends. A redraw
+// starts every animation again, so each one is told how far along it already is (`--at`, `--turn`).
 
 import { type Stage, hashUnit, round } from './kit'
 
@@ -23,7 +23,7 @@ const BLUE = '#3d6a96'
 const OCHRE = '#b98a2c'
 const RED = '#b44a36'
 const SHEET = '#f8f4ea'
-const SCRIPT = `'Snell Roundhand','Apple Chancery','Zapfino','Bradley Hand',cursive`
+const HAND = `'Chalkboard SE','Noteworthy','Comic Sans MS','Marker Felt','Bradley Hand',sans-serif`
 
 const SIZE = 124
 const PITCH = 132
@@ -57,7 +57,7 @@ export function instrumentStyle(): string {
 }
 
 function frame(slot: number, x: number, y: number, body: string): string {
-  return `<g class="i${slot}"><svg x="${x}" y="${y}" width="${SIZE}" height="${SIZE}" viewBox="0 0 140 140" font-family="${SCRIPT}">${body}</svg></g>`
+  return `<g class="i${slot}"><svg x="${x}" y="${y}" width="${SIZE}" height="${SIZE}" viewBox="0 0 140 140" font-family="${HAND}">${body}</svg></g>`
 }
 
 /** A dial's rim as a pencil would draw it: two passes that do not quite agree, the second lighter. */
@@ -70,7 +70,7 @@ function rim(): string {
 }
 
 function caption(text: string, y: number, colour = INK): string {
-  return `<text x="70" y="${y}" text-anchor="middle" font-size="15" font-style="italic" fill="${colour}">${text}</text>`
+  return `<text x="70" y="${y}" text-anchor="middle" font-size="13" fill="${colour}">${text}</text>`
 }
 
 function levelColour(percent: number): string {
@@ -99,19 +99,24 @@ function context(figures: Figures, previous: number | null): string {
       rim() +
       wash +
       `<circle cx="70" cy="70" r="62" fill="none" stroke="${GRAPHITE}" stroke-width="2.2"/>` +
-      `<text x="70" y="80" text-anchor="middle" font-size="36" font-weight="700" fill="${INK}">${percent === null ? '--' : `${Math.round(level)}%`}</text>` +
+      `<text x="70" y="79" text-anchor="middle" font-size="29" font-weight="700" fill="${INK}">${percent === null ? '--' : `${Math.round(level)}%`}</text>` +
       caption('context', 102),
   )
 }
 
+/** A clock face as a child draws one: 12, 3, 6 and 9 written in, and a short tick for every other hour. */
 function face(): string {
   let ticks = ''
+  let numbers = ''
   for (let mark = 0; mark < 12; mark += 1) {
-    const angle = (mark * Math.PI) / 6
-    const inner = mark % 3 === 0 ? 46 : 50
-    ticks += `M${round(70 + inner * Math.cos(angle))} ${round(70 + inner * Math.sin(angle))}L${round(70 + 56 * Math.cos(angle))} ${round(70 + 56 * Math.sin(angle))}`
+    const angle = ((mark * 30 - 90) * Math.PI) / 180
+    if (mark % 3 === 0) {
+      numbers += `<text x="${round(70 + 47 * Math.cos(angle))}" y="${round(70 + 47 * Math.sin(angle) + 4.5)}" text-anchor="middle" font-size="13" font-weight="700" fill="${GRAPHITE}">${mark === 0 ? 12 : mark}</text>`
+    } else {
+      ticks += `M${round(70 + 49 * Math.cos(angle))} ${round(70 + 49 * Math.sin(angle))}L${round(70 + 55 * Math.cos(angle))} ${round(70 + 55 * Math.sin(angle))}`
+    }
   }
-  return `<path d="${ticks}" stroke="${GRAPHITE}" stroke-width="1.6" stroke-linecap="round"/>`
+  return `<path d="${ticks}" stroke="${GRAPHITE}" stroke-width="1.8" stroke-linecap="round"/>${numbers}`
 }
 
 /** One hand, set to its angle when the picture is drawn; a turning hand is then carried round by CSS at its own pace. */
@@ -129,7 +134,7 @@ const MOST_TALLIES = 20
 /** Pencil tally marks in gates of five, centred on the dial: one mark for each tool call. */
 function tallyMarks(count: number, y: number): string {
   if (count > MOST_TALLIES) {
-    return `<text x="70" y="${y + 10}" text-anchor="middle" font-size="15" font-style="italic" fill="${INK}">${count} tools</text>`
+    return `<text x="70" y="${y + 10}" text-anchor="middle" font-size="13" fill="${INK}">${count} tools</text>`
   }
   const gates = Math.ceil(count / 5)
   const left = 70 - (gates * 14 + (gates - 1) * 5) / 2
@@ -164,7 +169,7 @@ function hourglass(isRunning: boolean): string {
  * along, so the time counts up without the picture being drawn again.
  */
 function runningTime(size: number, baseline: number): string {
-  const cell = size * 0.5
+  const cell = size * 0.62
   const lineHeight = size + 6
   const reels = [
     { place: -1, faces: ['', '1', '2', '3', '4', '5', '6', '7', '8', '9'], seconds: 6000 },
@@ -186,13 +191,13 @@ function runningTime(size: number, baseline: number): string {
 }
 
 /**
- * The turn dial. While a turn runs: an hourglass, the running time, and a tally mark for each tool call so far.
- * Between turns it rests on the last turn's time and tool calls.
+ * The turn dial. While a turn runs: an hourglass and the running time. Between turns it rests on the last turn's
+ * time, with a tally mark for each of its tool calls.
  */
 function turn(stage: Stage): string {
   const isRunning = stage.phase === 'engaged'
   const rest = stage.lastTurnSeconds > 0 ? span(stage.lastTurnSeconds) : '--'
-  const time = isRunning ? runningTime(26, 80) : `<text x="70" y="80" text-anchor="middle" font-size="26" font-weight="700" fill="${INK}">${rest}</text>`
+  const time = isRunning ? runningTime(22, 80) : `<text x="70" y="80" text-anchor="middle" font-size="22" font-weight="700" fill="${INK}">${rest}</text>`
   const note = isRunning ? 'this turn' : stage.lastTurnSeconds > 0 ? 'last turn' : 'no turn yet'
   return frame(2, RIGHT, TOP, rim() + hourglass(isRunning) + time + tallyMarks(stage.total, 87) + caption(note, 114, isRunning ? SEPIA : INK))
 }
@@ -202,7 +207,7 @@ function turn(stage: Stage): string {
  * slid from the digit it showed before to the digit it shows now.
  */
 function odometer(text: string, before: string, size: number, baseline: number): string {
-  const cell = size * 0.5
+  const cell = size * 0.62
   const lineHeight = size + 6
   const left = 70 - (text.length * cell) / 2
   const was = before.padStart(text.length, ' ').slice(-text.length)
@@ -227,13 +232,13 @@ function odometer(text: string, before: string, size: number, baseline: number):
 }
 
 function cost(usd: number, previous: number | null): string {
-  return frame(3, LEFT, TOP + PITCH, rim() + odometer(`$${usd.toFixed(2)}`, `$${(previous ?? usd).toFixed(2)}`, usd >= 100 ? 26 : 30, 80) + caption('session cost', 104))
+  return frame(3, LEFT, TOP + PITCH, rim() + odometer(`$${usd.toFixed(2)}`, `$${(previous ?? usd).toFixed(2)}`, usd >= 100 ? 19 : 22, 78) + caption('session cost', 104))
 }
 
 function bar(y: number, name: string, percent: number): string {
   const level = Math.max(0, Math.min(100, percent))
   return (
-    `<text x="24" y="${y + 9}" font-size="14" font-style="italic" fill="${INK}">${name}</text>` +
+    `<text x="24" y="${y + 9}" font-size="12" fill="${INK}">${name}</text>` +
     `<rect x="52" y="${y}" width="64" height="10" rx="2" fill="none" stroke="${GRAPHITE}" stroke-width="1.4"/>` +
     `<rect x="53.5" y="${y + 1.5}" width="${round((level / 100) * 61)}" height="7" fill="${levelColour(level)}" fill-opacity=".55"/>`
   )

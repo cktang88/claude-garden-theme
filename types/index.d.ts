@@ -11,7 +11,8 @@ export type Stage = {
   lastTurnSeconds: number
   lastTurnTools: number
   turnSeconds: number
-  turnTools: number
+  seed: number
+  turns: number
   figures: Gauges
   previous: { contextPercent: number | null; usd: number | null }
 }
@@ -33,7 +34,6 @@ declare module 'claude-code' {
       activity: Watch
       tally: Tally
       gauges: Gauges
-      clock: number
       stage: Stage
     }
   }
