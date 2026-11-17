@@ -1,0 +1,5 @@
+{
+  "name": "claude-paper-dials",
+  "owner": { "name": "cktang88" },
+  "plugins": [{ "name": "paper-dials", "source": "./" }]
+}
