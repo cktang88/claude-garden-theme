@@ -15,7 +15,8 @@ export const LEFT_BED: Bed = { width: 620, plants: 12, flowerShare: 0.5 }
 export const RIGHT_BED: Bed = { width: 400, plants: 8, flowerShare: 0.8 }
 
 const GROUND = 1000
-const WASHES = ['#8a4b2d', '#3d6a96', '#b98a2c', '#b44a36']
+/** Flower colours: purples, pinks, reds, blues, yellow and orange. */
+const WASHES = ['#8e5aa8', '#b06fb8', '#d87a9c', '#e3a0b4', '#9c2f3a', '#c2452d', '#3d6a96', '#6d7fc4', '#d9a13a', '#e07f3a']
 const GREENS = ['#6f8355', '#7f8f5e', '#5f7a5a']
 const OCHRE = '#b98a2c'
 
@@ -57,8 +58,25 @@ function daisy(wash: string): string {
   return `<g fill="${wash}" fill-opacity=".45" stroke="${GRAPHITE}" stroke-width=".7">${petals}<circle r="5" fill="${OCHRE}" fill-opacity=".9"/></g>`
 }
 
+/** A tulip: a tall cup of two outer petals with a third folded in front of them. */
 function tulip(wash: string): string {
-  return `<path d="M-9 0C-15 -12 -11 -22 -10 -28L-4 -19L0 -30L4 -19L10 -28C11 -22 15 -12 9 0Q0 6 -9 0Z" fill="${wash}" fill-opacity=".5" stroke="${GRAPHITE}" stroke-width=".8" stroke-linejoin="round"/>`
+  return (
+    `<g fill="${wash}" stroke="${GRAPHITE}" stroke-width=".8" stroke-linejoin="round">` +
+    `<path d="M-9 2C-14 -8 -12 -22 -7 -31C-3 -25 -1 -21 0 -18C1 -21 3 -25 7 -31C12 -22 14 -8 9 2Q0 7 -9 2Z" fill-opacity=".45"/>` +
+    `<path d="M-5.5 3C-7 -9 -4 -24 0 -32C4 -24 7 -9 5.5 3Q0 6 -5.5 3Z" fill-opacity=".6"/></g>`
+  )
+}
+
+/** A rose: a ring of round outer petals, a tighter ring inside it, and a curl of petals at the heart. */
+function rose(wash: string): string {
+  let outer = ''
+  for (let petal = 0; petal < 5; petal += 1) outer += `<ellipse cx="0" cy="-9.5" rx="9.5" ry="8" transform="rotate(${petal * 72})"/>`
+  let inner = ''
+  for (let petal = 0; petal < 3; petal += 1) inner += `<ellipse cx="0" cy="-5" rx="6.5" ry="5.5" transform="rotate(${petal * 120 + 36})"/>`
+  return (
+    `<g transform="translate(0 -6)" fill="${wash}" stroke="${GRAPHITE}" stroke-width=".7"><g fill-opacity=".4">${outer}</g><g fill-opacity=".5">${inner}</g>` +
+    `<path d="M-3.5 0a3.5 3.5 0 1 1 3.5 3.5a2 2 0 1 1 -2 -2" fill="none" stroke-linecap="round"/></g>`
+  )
 }
 
 function umbel(wash: string): string {
@@ -138,7 +156,7 @@ function sunflower(): string {
   return `<g fill="${OCHRE}" fill-opacity=".6" stroke="${GRAPHITE}" stroke-width=".6">${petals}<circle r="8" fill="#8a4b2d" fill-opacity=".8"/></g>`
 }
 
-const BLOOMS: readonly ((wash: string) => string)[] = [daisy, tulip, umbel, spike, bells, globe, poppy, starCluster, sunflower]
+const BLOOMS: readonly ((wash: string) => string)[] = [daisy, tulip, rose, umbel, spike, tulip, bells, globe, rose, poppy, starCluster, sunflower]
 
 /** One plant's place: `grown` is how far along it is (0 to 1), and `size` is that made smaller toward the chat. */
 type Plot = { seed: number; index: number; rootX: number; grown: number; size: number; green: string }

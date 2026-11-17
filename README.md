@@ -21,8 +21,8 @@ It grows with the session, one step per turn.
 
 ![the same session after 2, 8, 15, 30, 60 and 150 turns](docs/growth.png)
 
-- A session starts with two seedlings on each side. They grow up, their buds open, and new seedlings keep coming up among them. Nine kinds of flower (daisies, tulips, poppies, sunflowers, spikes, bells, globes and more), plus ferns and leafy clumps.
-- Every session grows its own plants from its own seed, so no two gardens match.
+- A session starts with two seedlings on each side. They grow up, their buds open, and new seedlings keep coming up among them. Ten kinds of flower (roses, tulips, daisies, poppies, sunflowers, spikes, bells, globes and more) in purples, pinks, reds, blues, yellow and orange, plus ferns and leafy clumps.
+- Every session grows its own garden from its own seed (taken from when the session started): which plants, where they stand, how tall, and what colour. No two gardens match.
 - A tree stands at the right edge of the page. It grows far more slowly than the flowers and never quite stops: a sapling, then a young tree, then a crown that fills the corner, and in a very long session just a big trunk with bark, because the crown has grown out of view.
 - There is a picket fence, a watering can, a birdhouse with a bird, mushrooms, a snail and a butterfly.
 - Every 40 seconds a fox steps in from the bottom right, looks around and steps back out.
