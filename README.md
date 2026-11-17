@@ -4,9 +4,9 @@ A light paper theme for the Claude desktop app (the Code tab). Warm paper behind
 
 ![warm paper with four pencil-sketched dials in the top right](docs/preview.png)
 
-The turn dial between turns (left) and while Claude works (right):
+The dials while Claude works. The cost rolls to its new number, the turn's time counts up, and the hourglass turns over each minute:
 
-![the four dials, between turns and while working](docs/dials.png)
+![the four dials moving](docs/dials.gif)
 
 | Dial | What it shows |
 | --- | --- |
