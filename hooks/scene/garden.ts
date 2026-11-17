@@ -31,6 +31,12 @@ function chance(seed: number, index: number, choice: number): number {
   return hashUnit(seed * 97 + index, choice)
 }
 
+/** A colour mixed part of the way toward the paper's cream. */
+function tint(hex: string, share: number): string {
+  const mix = (at: number, paper: number) => Math.round(parseInt(hex.slice(at, at + 2), 16) * (1 - share) + paper * share)
+  return `rgb(${mix(1, 243)},${mix(3, 238)},${mix(5, 226)})`
+}
+
 function pick<T>(list: readonly T[], share: number, fallback: T): T {
   return list[Math.floor(share * list.length)] ?? fallback
 }
@@ -40,6 +46,7 @@ type Leaf = { x: number; y: number; angle: number; length: number; plump: number
 /**
  * One almond-shaped leaf growing out of (x, y) at `angle` degrees. `plump` is its width as a share of its length.
  * It carries no colour of its own: `foliage` gives a plant's leaves their look once, which keeps the picture small.
+ * Most plants' leaves are solid, like their petals, and the rest are a see-through wash.
  */
 function leaf({ x, y, angle, length, plump, hasRib }: Leaf): string {
   const half = round(length / 2)
@@ -48,38 +55,38 @@ function leaf({ x, y, angle, length, plump, hasRib }: Leaf): string {
   return `<path transform="translate(${round(x)} ${round(y)}) rotate(${round(angle)})" d="M0 0Q${half} ${-belly} ${round(length)} 0Q${half} ${belly} 0 0Z${rib}"/>`
 }
 
-function foliage(green: string, leaves: string): string {
-  return `<g fill="${green}" fill-opacity=".42" stroke="${GRAPHITE}" stroke-width="1.2" stroke-linejoin="round">${leaves}</g>`
+function foliage(plot: Plot, leaves: string): string {
+  return `<g fill="${plot.green}" fill-opacity="${plot.leafBody}" stroke="${GRAPHITE}" stroke-width="1.2" stroke-linejoin="round">${leaves}</g>`
 }
 
-function daisy(wash: string): string {
+function daisy(wash: string, body: number): string {
   let petals = ''
   for (let petal = 0; petal < 10; petal += 1) petals += `<ellipse cx="12" cy="0" rx="10" ry="4" transform="rotate(${petal * 36})"/>`
-  return `<g fill="${wash}" fill-opacity=".45" stroke="${GRAPHITE}" stroke-width=".7">${petals}<circle r="5" fill="${OCHRE}" fill-opacity=".9"/></g>`
+  return `<g fill="${wash}" fill-opacity="${body}" stroke="${GRAPHITE}" stroke-width=".7">${petals}<circle r="5" fill="${OCHRE}" fill-opacity=".9"/></g>`
 }
 
 /** A tulip: a tall cup of two outer petals with a third folded in front of them. */
-function tulip(wash: string): string {
+function tulip(wash: string, body: number): string {
   return (
     `<g fill="${wash}" stroke="${GRAPHITE}" stroke-width=".8" stroke-linejoin="round">` +
-    `<path d="M-9 2C-14 -8 -12 -22 -7 -31C-3 -25 -1 -21 0 -18C1 -21 3 -25 7 -31C12 -22 14 -8 9 2Q0 7 -9 2Z" fill-opacity=".45"/>` +
-    `<path d="M-5.5 3C-7 -9 -4 -24 0 -32C4 -24 7 -9 5.5 3Q0 6 -5.5 3Z" fill-opacity=".6"/></g>`
+    `<path d="M-9 2C-14 -8 -12 -22 -7 -31C-3 -25 -1 -21 0 -18C1 -21 3 -25 7 -31C12 -22 14 -8 9 2Q0 7 -9 2Z" fill-opacity="${body}"/>` +
+    `<path d="M-5.5 3C-7 -9 -4 -24 0 -32C4 -24 7 -9 5.5 3Q0 6 -5.5 3Z" fill-opacity="${Math.min(1, body + 0.15)}"/></g>`
   )
 }
 
 /** A rose: a ring of round outer petals, a tighter ring inside it, and a curl of petals at the heart. */
-function rose(wash: string): string {
+function rose(wash: string, body: number): string {
   let outer = ''
   for (let petal = 0; petal < 5; petal += 1) outer += `<ellipse cx="0" cy="-9.5" rx="9.5" ry="8" transform="rotate(${petal * 72})"/>`
   let inner = ''
   for (let petal = 0; petal < 3; petal += 1) inner += `<ellipse cx="0" cy="-5" rx="6.5" ry="5.5" transform="rotate(${petal * 120 + 36})"/>`
   return (
-    `<g transform="translate(0 -6)" fill="${wash}" stroke="${GRAPHITE}" stroke-width=".7"><g fill-opacity=".4">${outer}</g><g fill-opacity=".5">${inner}</g>` +
+    `<g transform="translate(0 -6)" fill="${wash}" stroke="${GRAPHITE}" stroke-width=".7"><g fill-opacity="${body}">${outer}</g><g fill-opacity="${Math.min(1, body + 0.1)}">${inner}</g>` +
     `<path d="M-3.5 0a3.5 3.5 0 1 1 3.5 3.5a2 2 0 1 1 -2 -2" fill="none" stroke-linecap="round"/></g>`
   )
 }
 
-function umbel(wash: string): string {
+function umbel(wash: string, body: number): string {
   let spokes = ''
   let heads = ''
   for (let spoke = 0; spoke < 9; spoke += 1) {
@@ -90,7 +97,7 @@ function umbel(wash: string): string {
     spokes += `M0 0L${x} ${y}`
     heads += `<circle cx="${x}" cy="${y}" r="4.2"/>`
   }
-  return `<path d="${spokes}" fill="none" stroke="${GRAPHITE}" stroke-width=".6"/><g fill="${wash}" fill-opacity=".55" stroke="${GRAPHITE}" stroke-width=".6">${heads}</g>`
+  return `<path d="${spokes}" fill="none" stroke="${GRAPHITE}" stroke-width=".6"/><g fill="${wash}" fill-opacity="${body}" stroke="${GRAPHITE}" stroke-width=".6">${heads}</g>`
 }
 
 function bud(green: string): string {
@@ -98,7 +105,7 @@ function bud(green: string): string {
 }
 
 /** A spike of small florets up the last stretch of the stem, as lavender or a foxglove has. */
-function spike(wash: string): string {
+function spike(wash: string, body: number): string {
   let florets = ''
   for (let step = 0; step < 9; step += 1) {
     const y = round(14 - step * 6.5)
@@ -106,37 +113,37 @@ function spike(wash: string): string {
     const x = round((step % 2 === 0 ? -1 : 1) * size * 0.8)
     florets += `<ellipse cx="${x}" cy="${y}" rx="${size}" ry="${round(size * 0.62)}" transform="rotate(${x < 0 ? 28 : -28} ${x} ${y})"/>`
   }
-  return `<path d="M0 16V-40" fill="none" stroke="${GRAPHITE}" stroke-width=".7"/><g fill="${wash}" fill-opacity=".55" stroke="${GRAPHITE}" stroke-width=".6">${florets}</g>`
+  return `<path d="M0 16V-40" fill="none" stroke="${GRAPHITE}" stroke-width=".7"/><g fill="${wash}" fill-opacity="${body}" stroke="${GRAPHITE}" stroke-width=".6">${florets}</g>`
 }
 
 /** Bells hanging from a stalk that arches over, as a bluebell's do. */
-function bells(wash: string): string {
+function bells(wash: string, body: number): string {
   const hung = [[3, -14], [9, -25], [17, -31], [26, -34]]
     .map(([x, y]) => `<path transform="translate(${x} ${y})" d="M0 0V3M-3.5 3C-5 8 -6 12 -6.5 15L-3 13L0 16L3 13L6.5 15C6 12 5 8 3.5 3Z"/>`)
     .join('')
-  return `<path d="M0 0C0 -22 10 -34 27 -34" fill="none" stroke="${GRAPHITE}" stroke-width=".8"/><g fill="${wash}" fill-opacity=".55" stroke="${GRAPHITE}" stroke-width=".6" stroke-linejoin="round">${hung}</g>`
+  return `<path d="M0 0C0 -22 10 -34 27 -34" fill="none" stroke="${GRAPHITE}" stroke-width=".8"/><g fill="${wash}" fill-opacity="${body}" stroke="${GRAPHITE}" stroke-width=".6" stroke-linejoin="round">${hung}</g>`
 }
 
 /** A globe of tiny flowers on a bare stem, as an allium has. */
-function globe(wash: string): string {
+function globe(wash: string, body: number): string {
   let dots = '<circle cx="0" cy="-13" r="3"/>'
   for (let dot = 0; dot < 16; dot += 1) {
     const ring = dot < 10 ? 11.5 : 5.8
     const angle = (dot / (dot < 10 ? 10 : 6)) * Math.PI * 2
     dots += `<circle cx="${round(Math.cos(angle) * ring)}" cy="${round(-13 + Math.sin(angle) * ring)}" r="3"/>`
   }
-  return `<g fill="${wash}" fill-opacity=".5" stroke="${GRAPHITE}" stroke-width=".5">${dots}</g>`
+  return `<g fill="${wash}" fill-opacity="${body}" stroke="${GRAPHITE}" stroke-width=".5">${dots}</g>`
 }
 
 /** A poppy: four broad petals round a dark middle. */
-function poppy(wash: string): string {
+function poppy(wash: string, body: number): string {
   let petals = ''
   for (let petal = 0; petal < 4; petal += 1) petals += `<ellipse cx="0" cy="-9" rx="10.5" ry="9.5" transform="rotate(${petal * 90 + 20})"/>`
-  return `<g fill="${wash}" fill-opacity=".5" stroke="${GRAPHITE}" stroke-width=".7">${petals}<circle r="4" fill="${GRAPHITE}" fill-opacity=".8"/></g>`
+  return `<g fill="${wash}" fill-opacity="${body}" stroke="${GRAPHITE}" stroke-width=".7">${petals}<circle r="4" fill="${GRAPHITE}" fill-opacity=".8"/></g>`
 }
 
 /** A cluster of small five-petalled flowers, as forget-me-nots grow. */
-function starCluster(wash: string): string {
+function starCluster(wash: string, body: number): string {
   let cluster = ''
   for (const [x, y] of [[0, -6], [-11, 0], [10, 2], [-3, 9]]) {
     let petals = ''
@@ -146,20 +153,20 @@ function starCluster(wash: string): string {
     }
     cluster += `${petals}<circle cx="${x}" cy="${y}" r="1.6" fill="${OCHRE}" fill-opacity="1"/>`
   }
-  return `<g fill="${wash}" fill-opacity=".6" stroke="${GRAPHITE}" stroke-width=".5">${cluster}</g>`
+  return `<g fill="${wash}" fill-opacity="${body}" stroke="${GRAPHITE}" stroke-width=".5">${cluster}</g>`
 }
 
 /** A sunflower: a wide brown middle and a ring of long yellow petals, whatever colour its neighbours are. */
-function sunflower(): string {
+function sunflower(_wash: string, body: number): string {
   let petals = ''
   for (let petal = 0; petal < 14; petal += 1) petals += `<ellipse cx="14" cy="0" rx="8" ry="3.3" transform="rotate(${round(petal * (360 / 14))})"/>`
-  return `<g fill="${OCHRE}" fill-opacity=".6" stroke="${GRAPHITE}" stroke-width=".6">${petals}<circle r="8" fill="#8a4b2d" fill-opacity=".8"/></g>`
+  return `<g fill="${OCHRE}" fill-opacity="${body}" stroke="${GRAPHITE}" stroke-width=".6">${petals}<circle r="8" fill="#8a4b2d" fill-opacity=".8"/></g>`
 }
 
-const BLOOMS: readonly ((wash: string) => string)[] = [daisy, tulip, rose, umbel, spike, tulip, bells, globe, rose, poppy, starCluster, sunflower]
+const BLOOMS: readonly ((wash: string, body: number) => string)[] = [daisy, tulip, rose, umbel, spike, tulip, bells, globe, rose, poppy, starCluster, sunflower]
 
 /** One plant's place: `grown` is how far along it is (0 to 1), and `size` is that made smaller toward the chat. */
-type Plot = { seed: number; index: number; rootX: number; grown: number; size: number; green: string }
+type Plot = { seed: number; index: number; rootX: number; grown: number; size: number; green: string; leafBody: number }
 
 function swaying(plot: Plot, body: string): string {
   return `<g class="sway" style="transform-origin:${round(plot.rootX)}px ${GROUND}px;animation-duration:${7 + Math.floor(chance(plot.seed, plot.index, 8) * 5)}s">${body}</g>`
@@ -199,7 +206,7 @@ function stalk(plot: Plot, order: number, bloom: string): string {
   const scale = (1.5 + chance(seed, index, 9) * 1.2) * (1 - order * 0.12)
   const head = `<g transform="translate(${round(tip.x)} ${round(tip.y)}) rotate(${round(tip.facing - 90)}) scale(${round(scale)})">${plot.grown >= 0.8 ? bloom : bud(green)}</g>`
   const shoot = order === 0 && plot.grown >= 0.95 ? sideShoot(plot, curve, bloom) : ''
-  return drawn + foliage(green, leaves) + shoot + head
+  return drawn + foliage(plot, leaves) + shoot + head
 }
 
 /**
@@ -208,7 +215,12 @@ function stalk(plot: Plot, order: number, bloom: string): string {
  */
 function flower(plot: Plot): string {
   const { seed, index, rootX, size, green } = plot
-  const bloom = pick(BLOOMS, chance(seed, index, 7), daisy)(pick(WASHES, chance(seed, index, 6), OCHRE))
+  // Most plants' petals are painted solid, so they lie over one another; a few are half solid and a few are a thin
+  // wash you can see through. Solid ones are mixed toward the paper so they stay soft.
+  const sheer = chance(seed, index, 20)
+  const body = sheer < 0.2 ? 0.5 : sheer < 0.4 ? 0.75 : 1
+  const colour = pick(WASHES, chance(seed, index, 6), OCHRE)
+  const bloom = pick(BLOOMS, chance(seed, index, 7), daisy)(body === 1 ? tint(colour, 0.3) : colour, body)
   const share = chance(seed, index, 19)
   const stems = share < 0.45 ? 1 : share < 0.8 ? 2 : 3
 
@@ -218,7 +230,7 @@ function flower(plot: Plot): string {
   }
   let stalks = ''
   for (let order = stems - 1; order >= 0; order -= 1) stalks += stalk(plot, order, bloom)
-  return swaying(plot, foliage(green, basal) + stalks)
+  return swaying(plot, foliage(plot, basal) + stalks)
 }
 
 /** A short shoot off the middle of a full-grown flower's stem, with a smaller bloom of its own. */
@@ -250,7 +262,7 @@ function fern(plot: Plot): string {
       leaflets += leaf({ x: spot.x, y: spot.y, angle: spot.facing - 180 + side * 62, length, plump: 0.2, hasRib: false })
     }
   }
-  return swaying(plot, drawn + foliage(green, leaflets))
+  return swaying(plot, drawn + foliage(plot, leaflets))
 }
 
 /** A clump of broad leaves fanning out from the ground. */
@@ -262,7 +274,7 @@ function clump(plot: Plot): string {
     const spread = -90 + (blade - (count - 1) / 2) * 24 + (chance(seed, index * 31 + blade, 3) - 0.5) * 12
     leaves += leaf({ x: rootX, y: GROUND, angle: spread, length: (110 + chance(seed, index * 31 + blade, 4) * 80) * size, plump: 0.17, hasRib: true })
   }
-  return swaying(plot, foliage(green, leaves))
+  return swaying(plot, foliage(plot, leaves))
 }
 
 function grass(seed: number, width: number): string {
@@ -289,6 +301,8 @@ export function garden(seed: number, turns: number, bed: Bed, fewer = 0): string
     const sproutedAt = rank < 2 ? 0 : (rank - 1) * 1.3
     if (turns < sproutedAt || rank >= bed.plants - fewer) continue
     const grown = Math.min(1, 0.12 + (turns - sproutedAt) * 0.09)
+    const green = pick(GREENS, chance(seed, index, 16), '#6f8355')
+    const hasSolidLeaves = chance(seed, index, 21) >= 0.35
     const plot: Plot = {
       seed,
       index,
@@ -296,7 +310,8 @@ export function garden(seed: number, turns: number, bed: Bed, fewer = 0): string
       rootX: 22 + (index + chance(seed, index, 1) * 0.9) * ((bed.width - 50) / bed.plants),
       grown,
       size: grown * (1 - (index / bed.plants) * 0.3),
-      green: pick(GREENS, chance(seed, index, 16), '#6f8355'),
+      green: hasSolidLeaves ? tint(green, 0.3) : green,
+      leafBody: hasSolidLeaves ? 1 : 0.45,
     }
     const kind = chance(seed, index, 17)
     if (kind < bed.flowerShare || index % 4 === 1) flowers += flower(plot)
