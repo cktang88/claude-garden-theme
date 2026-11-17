@@ -222,12 +222,13 @@ export const register: Register = on => {
     return next(e)
   })
 
+  // A fault in the theme must never get in the way of a tool call: if the count or the redraw fails, the call goes on.
   on('tool.call', async ($, e, next) => {
     await update($, watch, was => ({ ...was, toolCalls: was.toolCalls + 1 }))
     await redrawSoon($)
 
     return next(e)
-  })
+  }).catch(($, e, next) => next(e))
 
   on('turn.complete', async ($, e, next) => {
     if (e.agentId === undefined) {
@@ -256,7 +257,7 @@ export const register: Register = on => {
     }
 
     return { text: await show($) }
-  })
+  }).catch(() => ({ text: 'Paper Dials hit an error. Run /paper-dials again.' }))
 
   // Not async, on purpose: see `latest`. It answers at once from the snapshot `redraw` keeps.
   on('ui.render', { component: 'Backdrop' }, ($, e, next) => {
