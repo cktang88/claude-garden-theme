@@ -274,7 +274,8 @@ export function garden(seed: number, turns: number, bed: Bed, fewer = 0): string
     const plot: Plot = {
       seed,
       index,
-      rootX: 30 + index * ((bed.width - 56) / bed.plants) + chance(seed, index, 1) * 22,
+      // Each plant has a strip of the bed to itself and stands anywhere across it, so no two gardens line up alike.
+      rootX: 22 + (index + chance(seed, index, 1) * 0.9) * ((bed.width - 50) / bed.plants),
       grown,
       size: grown * (1 - (index / bed.plants) * 0.3),
       green: pick(GREENS, chance(seed, index, 16), '#6f8355'),

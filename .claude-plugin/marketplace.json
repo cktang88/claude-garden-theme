@@ -1,5 +1,15 @@
 {
-  "name": "claude-paper-dials",
-  "owner": { "name": "cktang88" },
-  "plugins": [{ "name": "paper-dials", "source": "./" }]
+  "name": "claude-garden-theme",
+  "owner": {
+    "name": "cktang88"
+  },
+  "metadata": {
+    "description": "A garden theme for the Claude desktop app."
+  },
+  "plugins": [
+    {
+      "name": "garden-theme",
+      "source": "./"
+    }
+  ]
 }

@@ -1,4 +1,4 @@
-// Paper Dials: a sheet of warm paper with four pencil-sketched dials at the top right, a paper plane that crosses
+// Garden theme: a sheet of warm paper with four pencil-sketched dials at the top right, a paper plane that crosses
 // the top, and a garden in each bottom corner: plants, a tree that keeps growing, and a few garden things.
 // The picture is drawn from a Stage and the session's figures. The app redraws the whole picture whenever its source
 // changes, which starts its animations again. `--at` (seconds on a shared clock) and `--turn` (seconds into the turn)
@@ -55,7 +55,7 @@ function draw(stage: Stage, figures: Figures, previous: Previous, fewer: number)
 /** The app refuses a picture whose source is over 131,072 characters, so a garden that grew too big loses plants. */
 const LARGEST = 122_000
 
-export function paperDialsSvg(stage: Stage, figures: Figures, previous: Previous): string {
+export function sceneSvg(stage: Stage, figures: Figures, previous: Previous): string {
   for (let fewer = 0; fewer < LEFT_BED.plants; fewer += 1) {
     const picture = draw(stage, figures, previous, fewer)
     if (picture.length <= LARGEST) return picture

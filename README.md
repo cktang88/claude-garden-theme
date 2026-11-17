@@ -1,6 +1,6 @@
-# Paper Dials
+# Garden theme for the Claude desktop app
 
-A light paper theme for the Claude desktop app (the Code tab). Cream paper behind the chat, four hand-drawn dials in the top right that show real numbers from your session, and a little garden along the bottom that grows the longer the session runs.
+A light paper theme for the Code tab. Cream paper behind the chat, four hand-drawn dials in the top right that show real numbers from your session, and a little garden along the bottom that grows the longer the session runs.
 
 ![cream paper with four hand-drawn dials in the top right, a paper plane crossing the top, and a garden with a tree along the bottom](docs/preview.gif)
 
@@ -35,7 +35,7 @@ The picture is only redrawn when a turn starts and when it ends, so nothing flic
 In a terminal session, at the prompt:
 
 ```
-/plugin install paper-dials --marketplace cktang88/claude-paper-dials
+/plugin install garden-theme --marketplace cktang88/claude-garden-theme
 ```
 
 Answer `y` to add the marketplace, then pick a scope (user is fine).
@@ -43,12 +43,12 @@ Answer `y` to add the marketplace, then pick a scope (user is fine).
 From a shell:
 
 ```
-claude plugin install paper-dials --marketplace cktang88/claude-paper-dials
+claude plugin install garden-theme --marketplace cktang88/claude-garden-theme
 ```
 
-In the desktop app, where `/plugin` does not run: click + next to the prompt box, then Plugins, Add marketplace with `cktang88/claude-paper-dials`, then Add plugin.
+In the desktop app, where `/plugin` does not run: click + next to the prompt box, then Plugins, Add marketplace with `cktang88/claude-garden-theme`, then Add plugin.
 
-`/paper-dials` turns the theme on again, `/paper-dials off` clears it for the session.
+`/garden` turns the theme on again, `/garden off` clears it for the session.
 
 Only tried on the macOS desktop app. The lettering uses Chalkboard SE and falls back to other hand-printed fonts.
 

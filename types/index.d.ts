@@ -30,7 +30,7 @@ export type Gauges = {
 
 declare module 'claude-code' {
   interface PluginState {
-    'paper-dials': {
+    'garden-theme': {
       activity: Watch
       tally: Tally
       gauges: Gauges

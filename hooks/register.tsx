@@ -1,4 +1,4 @@
-// Paper Dials: a sheet of warm paper behind the chat with four pencil-sketched dials and a garden that grows over
+// Garden theme: a sheet of warm paper behind the chat with four pencil-sketched dials and a garden that grows over
 // the session, and a matching light color theme. The backdrop is drawn again only when a turn starts and when it
 // ends: the app shows a redraw as a brief flash of the whole picture, so nothing is redrawn while a turn runs.
 
@@ -7,19 +7,19 @@ import type { EngineInterface, Register, ThemeSetArgs } from 'claude-code'
 
 import type { Gauges, Stage, Tally, Watch } from '../types'
 import { makeColors } from './make-colors.js'
-import { paperDialsSvg } from './scene'
+import { sceneSvg } from './scene'
 
-const COMMAND = 'paper-dials'
+const COMMAND = 'garden'
 
-const GAUGES = { plugin: 'paper-dials', key: 'gauges' } as const
-const ACTIVITY = { plugin: 'paper-dials', key: 'activity' } as const
-const TALLY = { plugin: 'paper-dials', key: 'tally' } as const
+const GAUGES = { plugin: 'garden-theme', key: 'gauges' } as const
+const ACTIVITY = { plugin: 'garden-theme', key: 'activity' } as const
+const TALLY = { plugin: 'garden-theme', key: 'tally' } as const
 
-const watch = atom({ plugin: 'paper-dials', key: 'activity' } as const, { phase: 'idle', startedAt: 0, toolCalls: 0 } as Watch)
-const tally = atom({ plugin: 'paper-dials', key: 'tally' } as const, { turns: 0, lastTurnSeconds: 0 } as Tally)
+const watch = atom({ plugin: 'garden-theme', key: 'activity' } as const, { phase: 'idle', startedAt: 0, toolCalls: 0 } as Watch)
+const tally = atom({ plugin: 'garden-theme', key: 'tally' } as const, { turns: 0, lastTurnSeconds: 0 } as Tally)
 
 const { theme, problems } = makeColors({
-  label: 'Paper Dials',
+  label: 'Garden',
   only: 'light',
   roles: { accent: '#2f5d8c', danger: '#b3392f', success: '#4e7d3a', warning: '#a86f14', pro: '#6d4f94' },
   light: {
@@ -37,8 +37,8 @@ const { theme, problems } = makeColors({
 })
 
 
-const SCENE = 'paper-dials'
-const STAGE = { plugin: 'paper-dials', key: 'stage' } as const
+const SCENE = 'garden'
+const STAGE = { plugin: 'garden-theme', key: 'stage' } as const
 const NO_FIGURES: Gauges = { contextPercent: null, limits: [], usd: null }
 const NOTHING_BEFORE = { contextPercent: null, usd: null }
 const EMPTY_STAGE: Stage = { at: 0, isWorking: false, lastTurnSeconds: 0, lastTurnTools: 0, turnSeconds: 0, seed: 0, turns: 0, figures: NO_FIGURES, previous: NOTHING_BEFORE }
@@ -61,7 +61,7 @@ function backdropSource(): string {
   if (built?.from !== latest) {
     const scene = { now: latest.at / 1000, daySeconds: daySecondsOf(latest.at), lastTurnSeconds: latest.lastTurnSeconds, turnSeconds: latest.turnSeconds, phase: latest.isWorking ? 'engaged' : 'standby', total: latest.isWorking ? 0 : latest.lastTurnTools, seed: latest.seed, turns: latest.turns } as const
 
-    built = { from: latest, source: paperDialsSvg(scene, latest.figures, latest.previous) }
+    built = { from: latest, source: sceneSvg(scene, latest.figures, latest.previous) }
   }
 
   return built.source
@@ -76,7 +76,7 @@ async function show($: EngineInterface): Promise<string> {
 
   const set = await $.theme.set(LOOK)
 
-  return set.isDrawn ? 'Paper Dials is on.' : `Paper Dials is set, but this window does not draw it: ${set.reason}`
+  return set.isDrawn ? 'The garden theme is on.' : `The garden theme is set, but this window does not draw it: ${set.reason}`
 }
 
 /** Asks for the backdrop to be drawn again, from the figures as they are now. */
@@ -127,7 +127,7 @@ export const register: Register = on => {
 
     await $.command.register({
       name: COMMAND,
-      description: 'Paper Dials: alone it turns the theme on; "off" clears it.',
+      description: 'Garden theme: alone it turns the theme on; "off" clears it.',
     })
     await readGauges($)
     // After a reload in the middle of a turn, the picture carries on as a working one.
@@ -135,7 +135,7 @@ export const register: Register = on => {
 
     const said = await show($)
 
-    if (said !== 'Paper Dials is on.') {
+    if (said !== 'The garden theme is on.') {
       void $.ui.toast(said)
     }
 
@@ -179,11 +179,11 @@ export const register: Register = on => {
     if (e.args.trim().toLowerCase() === 'off') {
       await $.theme.clear()
 
-      return { text: 'Paper Dials is off for this session. /paper-dials turns it on again.' }
+      return { text: 'The garden theme is off for this session. /garden turns it on again.' }
     }
 
     return { text: await show($) }
-  }).catch(() => ({ text: 'Paper Dials hit an error. Run /paper-dials again.' }))
+  }).catch(() => ({ text: 'The garden theme hit an error. Run /garden again.' }))
 
   // Not async, on purpose: see `latest`. It answers at once from the snapshot `redraw` keeps.
   on('ui.render', { component: 'Backdrop' }, ($, e, next) => {

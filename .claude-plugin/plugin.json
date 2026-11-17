@@ -1,7 +1,7 @@
 {
-  "name": "paper-dials",
-  "version": "1.1.0",
-  "description": "A light paper theme for the Claude desktop app: cream paper behind the chat, four hand-drawn animated dials with live session figures (context used, turn time and tool calls, session cost, clock), and a pencil garden with a tree that grows as the session goes on.",
+  "name": "garden-theme",
+  "version": "1.2.0",
+  "description": "Garden theme: a light paper theme for the Claude desktop app. Cream paper behind the chat, four hand-drawn animated dials with live session figures, and a pencil garden with a tree that grows as the session goes on.",
   "types": "./types/index.d.ts",
   "author": {
     "name": "cktang88"
